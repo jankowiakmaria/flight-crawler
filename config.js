@@ -2,9 +2,7 @@
 
 var config = {
   ryanair: {
-    path: "/SkySales/Booking.aspx",
-    page: "www.bookryanair.com",
-    protocol: "https"
+    page: "https://www.bookryanair.com/SkySales/Booking.aspx#Search"
   }
 };
 

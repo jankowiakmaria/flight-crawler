@@ -1,26 +1,48 @@
 'use strict';
 
-if (!global.__base) {
-  global.__base = __dirname;
-}
+var config = require("./config");
 
-var Crawler = require("simplecrawler"),
-    config = require(__base + "/config"),
-    cheerio = require("cheerio");
+var sendKeys = function(page, selector, keys){
+    page.evaluate(function(selector){
+        // focus on the text element before typing
+        var element = document.querySelector(selector);
+        element.click();
+        element.focus();
+    }, selector);
+    page.sendEvent("keypress", keys);
+};
 
-var flightCrawler = new Crawler(config.ryanair.page);    //todo: parameter
-flightCrawler.initialPath = config.ryanair.path;
-flightCrawler.initialProtocol = config.ryanair.protocol;    //todo: -||-
-flightCrawler.discoverResources = false;
+var isReady = false;
 
-flightCrawler.on("fetchcomplete", function(queueItem, responseBuffer, response){
-  console.log("queueItem.url", queueItem.url);
-  console.log("responseBuffer", responseBuffer.toString());
+var flightPage = require('webpage').create();
+
+flightPage.open(config.ryanair.page, function (status) {
+  console.log(status);
+  if(status === "success") {
+    sendKeys(flightPage, ".stations select[title='Origin']", "London (Stansted)");
+    sendKeys(flightPage, ".stations select[title='Destination']", "Pozna");
+
+    flightPage.evaluate(function() {
+      $("#SearchInput_ButtonSubmit").click();
+    });
+
+    setTimeout(function() {
+      flightPage.render('afterclick.png');
+      console.log(flightPage.url);
+      phantom.exit();
+    }, 5000);
+  }
+
+  //phantom.exit();
 });
 
-flightCrawler.on("fetcherror", function(queueItem, response){
-  console.log(queueItem.url);
-  console.log("error", response);
-});
-
-flightCrawler.start();
+/*flightPage.onResourceRequested = function (request) {
+  if(flightPage.url === "https://www.bookryanair.com/SkySales/Booking.aspx#Select")
+    console.log('Request', isReady(flightPage), flightPage.url, JSON.stringify(request, undefined, 4));
+};*/
+flightPage.onResourceReceived = function (response) {
+  if(flightPage.url === "https://www.bookryanair.com/SkySales/Booking.aspx#Select"){
+    isReady = true;
+    console.log('Receive', flightPage.url, JSON.stringify(response, undefined, 4));
+  }
+};
