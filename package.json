@@ -11,8 +11,8 @@
     "flight"
   ],
   "author": "jankowiak.maria@gmail.com",
-  "license": "ISC",
   "dependencies": {
-    "crawler": "^0.4.2"
+    "cheerio": "0.18.0",
+    "simplecrawler": "0.3.10"
   }
 }
