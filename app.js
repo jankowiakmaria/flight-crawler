@@ -1,29 +1,8 @@
 'use strict';
 
 var config = require("./config");
-
-var sendKeys = function(page, selector, keys){
-    page.evaluate(function(selector){
-        // focus on the text element before typing
-        var element = document.querySelector(selector);
-        element.click();
-        element.focus();
-    }, selector);
-    page.sendEvent("keypress", keys);
-};
-
-var replaceCurrentContent = function(page, selector, keys){
-  page.evaluate(function(selector){
-      // focus on the text element before typing
-      var element = document.querySelector(selector);
-      element.click();
-      element.focus();
-  }, selector);
-
-  page.sendEvent("keypress", page.event.key.A, null, null, 0x04000000);
-  page.sendEvent("keypress", page.event.key.Delete);
-  page.sendEvent("keypress", keys);
-};
+var ph = require("./phantomHelper");
+var system = require("system");
 
 var isReady = false;
 
@@ -33,15 +12,22 @@ flightPage.onConsoleMessage = function(msg) {
     console.log('console: ' + msg);
 };
 
+/*if (system.args.length === 1) {
+  console.log('Try to pass some args when invoking this script!');
+} else {
+  system.args.forEach(function (arg, i) {
+            console.log(i + ': ' + arg);
+  });
+}*/
 
 //todo: parameters
 flightPage.open(config.ryanair.page, function (status) {
   if(status === "success") {
-    sendKeys(flightPage, ".stations select[title='Origin']", "London (Stansted)");
-    sendKeys(flightPage, ".stations select[title='Destination']", "Pozna");
+    ph.set(flightPage, ".stations select[title='Origin']", "London (Stansted)");
+    ph.set(flightPage, ".stations select[title='Destination']", "Pozna");
 
-    replaceCurrentContent(flightPage, "[name='SearchInput$DeptDate']", "08/03/2015");
-    replaceCurrentContent(flightPage, "[name='SearchInput$RetDate']", "08/04/2015");
+    ph.replace(flightPage, "[name='SearchInput$DeptDate']", "08/03/2015");
+    ph.replace(flightPage, "[name='SearchInput$RetDate']", "08/04/2015");
 //$("#SearchInput_RoundTrip").click();
 //$("#SearchInput_OneWay").click();
 
@@ -50,7 +36,7 @@ flightPage.open(config.ryanair.page, function (status) {
     //todo: add the rest of parameters
 
     flightPage.evaluate(function() {
-      $("#SearchInput_ButtonSubmit").click();
+      $("#SearchInput_ButtonSubmit").click(); //todo: also wait
     });
 
     setTimeout(function() {                                           //todo: setInterval - polling
