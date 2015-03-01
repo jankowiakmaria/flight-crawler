@@ -1,10 +1,22 @@
 'use strict';
 
-var config = require("./config");
-var ph = require("./phantomHelper");
-var system = require("system");
+var config = require("./config"),
+    ph = require("./Helpers/phantomHelper"),
+    input = require("./Helpers/parametersHelper"),
+    moment = require("moment");
 
-var isReady = false;
+input.getParameters(function(error, parameters){
+  if(error){
+    console.log(error);
+    phantom.exit();
+    return;
+  }
+  phantom.exit();
+});
+
+
+
+/*var isReady = false;
 
 var flightPage = require('webpage').create();
 
@@ -12,20 +24,11 @@ flightPage.onConsoleMessage = function(msg) {
     console.log('console: ' + msg);
 };
 
-/*if (system.args.length === 1) {
-  console.log('Try to pass some args when invoking this script!');
-} else {
-  system.args.forEach(function (arg, i) {
-            console.log(i + ': ' + arg);
-  });
-}*/
-
 //todo: parameters
-flightPage.open(config.ryanair.page, function (status) {
+flightPage.open(config.ryanair.searchPage, function (status) {
   if(status === "success") {
     ph.set(flightPage, ".stations select[title='Origin']", "London (Stansted)");
     ph.set(flightPage, ".stations select[title='Destination']", "Pozna");
-
     ph.replace(flightPage, "[name='SearchInput$DeptDate']", "08/03/2015");
     ph.replace(flightPage, "[name='SearchInput$RetDate']", "08/04/2015");
 //$("#SearchInput_RoundTrip").click();
@@ -46,7 +49,7 @@ flightPage.open(config.ryanair.page, function (status) {
         $("article.selectFlights:not(#businessPlusBannerOffer)").each(function(index, element){
           var flight = $(element).find("a.active");
           result.push({
-            h1: $(element).children("h1").text(),
+            flight: $(element).children("h1").text(),
             date: $(element).find("caption").text().trim(),
             price: flight.find("div:not(.ng-hide)").text(),
             currency: flight.children("span").text()
@@ -62,7 +65,7 @@ flightPage.open(config.ryanair.page, function (status) {
 });
 
 flightPage.onResourceReceived = function (response) {
-  if(flightPage.url === "https://www.bookryanair.com/SkySales/Booking.aspx#Select"){
+  if(flightPage.url === config.ryanair.resultPage){
     isReady = true;
   }
-};
+};*/

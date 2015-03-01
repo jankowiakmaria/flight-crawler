@@ -2,7 +2,8 @@
 
 var config = {
   ryanair: {
-    page: "https://www.bookryanair.com/SkySales/Booking.aspx#Search"
+    searchPage: "https://www.bookryanair.com/SkySales/Booking.aspx#Search",
+    resultPage: "https://www.bookryanair.com/SkySales/Booking.aspx#Select"
   }
 };
 
