@@ -83,21 +83,22 @@ var processOneDay = function(providerConfig, parameters, currentDay, origin, des
 
   flightPage.open(providerConfig.searchPage, function (status) {
     if(status === "success") {
+      var selectors = providerConfig.selectors;
       setTimeout(function(){  //temporary fix
       //todo: wait until loaded!!!!
-        ph.set(flightPage, ".stations select[title='Origin']", origin);
-        ph.set(flightPage, ".stations select[title='Destination']", destination);
-        ph.replace(flightPage, "[name='SearchInput$DeptDate']", currentDay);
+        ph.set(flightPage, selectors.origin, origin);
+        ph.set(flightPage, selectors.destination, destination);
+        ph.replace(flightPage, selectors.departureDate, currentDay);
 
-        flightPage.evaluate(function() {
-          $("#SearchInput_OneWay").click();
-          $("#SearchInput_ButtonSubmit").click(); //todo: also wait
-        });
+        flightPage.evaluate(function(selectors) {
+          $(selectors.oneWay).click();
+          $(selectors.search).click(); //todo: also wait
+        }, selectors);
 
         loadTimeout = setTimeout(function(){  //wait until page is loaded
           getResults(flightPage);
         }, maxTimeout);
-      }, 1000);
+      }, 2000);
     }
     else{
       flightPage.close();
