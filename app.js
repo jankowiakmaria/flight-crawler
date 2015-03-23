@@ -6,6 +6,34 @@ var config = require("./config"),
     moment = require("moment"),
     webPage = require("webpage");
 
+/*function waitFor(testFx, onReady, flightPage, timeOutMillis) {
+    var maxtimeOutMillis = timeOutMillis ? timeOutMillis : 3000, //< Default Max Timout is 3s
+        start = new Date().getTime(),
+        condition = false;
+
+        console.log(start, maxtimeOutMillis);
+
+    var interval = setInterval(function() {
+            if ( (new Date().getTime() - start < maxtimeOutMillis) && !condition ) {
+                // If not time-out yet and condition not yet fulfilled
+                console.log("check");
+                condition = (typeof(testFx) === "string" ? eval(testFx) : testFx()); //< defensive code
+            } else {
+                if(!condition) {
+                    // If condition still not fulfilled (timeout but condition is 'false')
+                    console.log("'waitFor()' timeout");
+                    console.log(flightPage.content);
+                    phantom.exit(1);
+                } else {
+                    // Condition fulfilled (timeout and/or condition is 'true')
+                    console.log("'waitFor()' finished in " + (new Date().getTime() - start) + "ms.");
+                    typeof(onReady) === "string" ? eval(onReady) : onReady(); //< Do what it's supposed to do once the condition is fulfilled
+                    clearInterval(interval); //< Stop this interval
+                }
+            }
+        }, 500); //< repeat check every 250ms
+};*/
+
 var crawl = function(error, parameters){
   if(error){
     console.log(error);
@@ -15,6 +43,8 @@ var crawl = function(error, parameters){
 
   var providerConfig = config[parameters.provider];
   var flightsLeft = 0;
+
+console.log("start");
 
   function proc(providerConfig, parameters, currentDay, origin, destination) {
     flightsLeft++;
@@ -39,7 +69,7 @@ var crawl = function(error, parameters){
   };
 
   proc(providerConfig, parameters, moment(parameters.startDate), parameters.origin, parameters.destination);
-  proc(providerConfig, parameters, moment(parameters.startDate), parameters.destination, parameters.origin);
+  //proc(providerConfig, parameters, moment(parameters.startDate), parameters.destination, parameters.origin);
 };
 
 //for ryanair
@@ -69,10 +99,12 @@ var processOneDay = function(providerConfig, parameters, currentDay, origin, des
         var flight = $(element).find("a.active");
         result.push({
           flight: $(element).children("h1").text(),
-          date: currentDay,//$(element).find("caption").text().trim(),
+          date: currentDay,
           price: flight.find("div:not(.ng-hide)").text(),
           currency: flight.children("span").text()
         });
+
+        console.log($(element).text());
       });
       return result;
     }, currentDay);
@@ -82,23 +114,28 @@ var processOneDay = function(providerConfig, parameters, currentDay, origin, des
   };
 
   flightPage.open(providerConfig.searchPage, function (status) {
+    console.log(providerConfig.searchPage);
     if(status === "success") {
       var selectors = providerConfig.selectors;
-      setTimeout(function(){  //temporary fix
-      //todo: wait until loaded!!!!
+
+      //waitFor(function(){
+      //  return flightPage.evaluate(function(selectors){
+      //    return document.querySelector(selectors.oneWay) && document.querySelector(selectors.search);
+      //  }, selectors);
+      //}, function(){
         ph.set(flightPage, selectors.origin, origin);
         ph.set(flightPage, selectors.destination, destination);
         ph.replace(flightPage, selectors.departureDate, currentDay);
 
         flightPage.evaluate(function(selectors) {
           $(selectors.oneWay).click();
-          $(selectors.search).click(); //todo: also wait
+          $(selectors.search).click();
         }, selectors);
 
         loadTimeout = setTimeout(function(){  //wait until page is loaded
           getResults(flightPage);
         }, maxTimeout);
-      }, 2000);
+      //},flightPage, maxTimeout);
     }
     else{
       flightPage.close();
